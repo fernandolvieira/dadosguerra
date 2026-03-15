@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desafio Digital: Dados, Tecnologia e Geopolítica</title>
     <style>
-        :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; --gray-light: #f1f3f5; --gray-border: #dee2e6; }
+        :root { --primary: #0056b3; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; --gray-light: #f1f3f5; --gray-border: #dee2e6; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; line-height: 1.5; }
         .container { max-width: 850px; margin: auto; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
@@ -13,14 +13,13 @@
         h1, h2 { color: #0056b3; text-align: center; margin-top: 0; }
         input[type="text"], textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #0056b3; }
+        button:hover { background: #003d7a; }
         
         #timer { font-size: 24px; color: var(--danger); font-weight: bold; text-align: right; position: sticky; top: 10px; z-index: 100; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-border); display: inline-block; float: right; }
         
         .pergunta { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--gray-border); }
         .pergunta p { font-weight: 600; font-size: 18px; margin-bottom: 15px; color: #000; }
 
-        /* Estilo das Alternativas Corrigido */
         .opcao-item {
             display: flex;
             align-items: center;
@@ -36,101 +35,102 @@
         .opcao-item input[type="radio"] { margin-right: 15px; width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; }
         .opcao-text { font-size: 16px; color: #333; cursor: pointer; flex-grow: 1; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .ranking-area { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
         th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
         th { background: var(--primary); color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
     </style>
 </head>
-<body>
+<body onload="carregarRanking()">
 
 <div class="container">
     <div class="card" id="setup">
-        <h1>🛡️ Dados, Tecnologia e Cidadania</h1>
-        <p style="text-align:center">Exercício em grupo (4 alunos). 15 questões sorteadas. Tempo sugerido: 1h.</p>
-        <input type="text" id="nomeGrupo" placeholder="Identificação do Grupo (Ex: Grupo Alpha - 3º Ano)">
-        <textarea id="integrantes" placeholder="Nomes completos dos 4 integrantes"></textarea>
-        <button onclick="iniciarQuiz()">INICIAR DESAFIO</button>
+        <h1>🛡️ Desafio: Dados e Geopolítica</h1>
+        <p style="text-align:center">Exercício em grupo (15 questões aleatórias).</p>
+        
+        <input type="text" id="nomeGrupo" placeholder="Nome do Grupo">
+        <textarea id="integrantes" placeholder="Nomes dos 4 integrantes"></textarea>
+        <button onclick="iniciarQuiz()">INICIAR DESAFIO AGORA</button>
+
+        <div class="ranking-area">
+            <h2>🏆 Ranking Global da Turma</h2>
+            <div id="loaderRanking" style="text-align:center;">Carregando ranking...</div>
+            <table id="tabelaRankingInicio" class="hidden">
+                <thead>
+                    <tr><th>Pos</th><th>Grupo</th><th>Acertos</th><th>Tempo</th></tr>
+                </thead>
+                <tbody id="corpoRankingInicio"></tbody>
+            </table>
+        </div>
     </div>
 
     <div class="card hidden" id="quizContainer">
         <div id="timer">00:00</div>
         <div style="clear: both;"></div>
         <div id="questoesArea"></div>
-        <button onclick="finalizarQuiz()" style="background: var(--success);">FINALIZAR E ENVIAR</button>
+        <button onclick="finalizarQuiz()" style="background: var(--success); font-size: 20px;">ENVIAR RESPOSTAS</button>
     </div>
 
-    <div class="card hidden" id="rankingContainer">
-        <h2>🏆 Ranking da Atividade</h2>
-        <div id="statusEnvio" style="text-align:center; margin-bottom: 15px; font-weight: bold;"></div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Posição</th>
-                    <th>Grupo</th>
-                    <th>Acertos</th>
-                    <th>Tempo</th>
-                </tr>
-            </thead>
-            <tbody id="corpoRanking"></tbody>
-        </table>
-        <button onclick="location.reload()" style="background: var(--secondary);">RECOMEÇAR</button>
+    <div class="card hidden" id="posEnvio">
+        <h2>✅ Exercício Concluído!</h2>
+        <p style="text-align:center; font-size: 18px;">Seus dados foram enviados com sucesso para a planilha do professor.</p>
+        <button onclick="location.reload()">VOLTAR AO INÍCIO</button>
     </div>
 </div>
 
 <script>
-
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDiNXJ1sniwLmkwhvP8EH9Huj0jI8tNHFILchrR_KBik2aSKLJIux4a0PxyabkO-2K/exec"; 
 
     let tempoInicio, intervalo;
     let selecionadas = [];
 
     const bancoQuestoes = [
-        { q: "O que o fenômeno 'Pizza Meter' revela sobre a segurança de órgãos governamentais?", a: ["A qualidade da alimentação dos funcionários.", "Que dados públicos de consumo podem indicar crises e horas extras em massa.", "O baixo orçamento para refeitórios internos.", "A preferência gastronômica de líderes mundiais."], c: 1 },
-        { q: "Qual a relação entre o volume de pedidos em pizzarias e a inteligência estratégica?", a: ["Indica o nível de inflação de um país.", "Serve para medir o índice de felicidade da população.", "Funciona como um indicador não intencional de atividade intensa em centros de decisão.", "Ajuda a prever crises de abastecimento de trigo."], c: 2 },
-        { q: "A sigla OSINT refere-se a qual prática de inteligência?", a: ["Invasão de sistemas protegidos por senha.", "Coleta de dados em fontes abertas e disponíveis publicamente.", "Espionagem através de agentes infiltrados.", "Intercepção de chamadas telefônicas criptografadas."], c: 1 },
-        { q: "Por que o monitoramento de entregas de comida é uma ferramenta de inteligência não oficial?", a: ["Porque as pizzarias são obrigadas a reportar dados ao exército.", "Porque revela padrões de comportamento humano que precedem grandes eventos políticos ou militares.", "Porque os entregadores funcionam como espiões disfarçados.", "Porque o preço da pizza oscila conforme o risco de guerra."], c: 1 },
-        { q: "Dados de vendas de pizza são considerados 'segredos de estado'?", a: ["Sim, são protegidos por sigilo militar.", "Não, são dados comerciais que se tornam inteligência se analisados em conjunto.", "Sim, pois revelam a localização exata de bunkers.", "Não, são dados inúteis para qualquer exército."], c: 1 },
-        { q: "Na guerra moderna, o que as linhas de triangulação entre satélites e solo representam?", a: ["A cobertura de sinal de TV 5G.", "A precisão necessária para monitoramento e direcionamento de sistemas.", "Rotas de aviões comerciais.", "Fronteiras invisíveis criadas pela ONU."], c: 1 },
-        { q: "Como o monitoramento de tanques de petróleo via satélite afeta a economia de guerra?", a: ["Permite saber se o preço da gasolina vai baixar no posto.", "Revela o estoque estratégico e a capacidade de movimentação do adversário.", "Ajuda a encontrar novos poços de petróleo.", "Serve apenas para monitorar vazamentos ambientais."], c: 1 },
-        { q: "O uso de GPS em aplicativos de corrida por soldados pode resultar em:", a: ["Melhora no condicionamento físico da tropa.", "Exposição de perímetros de bases militares antes desconhecidas.", "Ganho de pontos em programas de recompensa.", "Aumento da velocidade de ataque."], c: 1 },
-        { q: "Qual a função principal dos drones discutidos durante as últimas duas aulas?", a: ["Entrega de suprimentos médicos.", "Reconhecimento e execução de ataques de precisão.", "Filmagem de eventos esportivos.", "Transmissão de Wi-fi para áreas rurais."], c: 1 },
-        { q: "O que diferencia a vigilância por satélite hoje da de 20 anos atrás?", a: ["Hoje é feita apenas por governos.", "A alta resolução e o processamento de dados em tempo real por empresas privadas.", "Antigamente os satélites eram tripulados.", "Não houve mudança significativa."], c: 1 },
-        { q: "Por que grandes líderes da tecnologia discutem publicamente temas como 'Risco' e 'Ética' na IA?", a: ["Estão promovendo novos modelos de smartphones.", "Existe uma preocupação real com o impacto da IA na segurança global e desinformação.", "Estão competindo para ver quem é mais rico.", "Querem banir a internet em zonas de guerra."], c: 1 },
-        { q: "O que é um 'Risco Ético' no uso de IA em drones de ataque?", a: ["O drone acabar a bateria no meio do caminho.", "A máquina tomar decisões de vida ou morte sem supervisão humana clara.", "O custo elevado de manutenção do software.", "O drone ser barulhento demais."], c: 1 },
-        { q: "O termo 'Regulação' aplicado às Big Techs serve para:", a: ["Obrigar as empresas a darem lucro aos governos.", "Estabelecer limites legais sobre como dados e IA podem ser usados.", "Impedir que as pessoas usem redes sociais.", "Controlar o preço dos computadores."], c: 1 },
-        { q: "Deepfakes podem ser usados como arma tecnológica para:", a: ["Melhorar a qualidade de vídeos antigos.", "Criar pronunciamentos falsos de líderes para desestabilizar nações.", "Fazer filtros de diversão no Instagram.", "Aumentar a velocidade de download."], c: 1 },
-        { q: "A OpenAI é um ator relevante no cenário geopolítico atual porque:", a: ["Criou robôs soldados físicos.", "Suas ferramentas de análise e geração de conteúdo podem influenciar a opinião pública e a estratégia.", "Ela é uma empresa do setor de petróleo.", "Ela fabrica mísseis guiados."], c: 1 },
-        { q: "O que define a 'Pegada Digital' de um usuário?", a: ["O tamanho do seu celular.", "O rastro de dados deixado por atividades online, como curtidas e localizações.", "A senha do seu e-mail principal.", "O número de seguidores que ele possui."], c: 1 },
-        { q: "Como seu uso de redes sociais e apps pode afetar a sua privacidade e segurança?", a: ["Apenas se você postar fotos de documentos.", "Através da coleta silenciosa de metadados, localização e hábitos que formam um perfil explorável.", "Não afeta, pois os termos de uso garantem proteção total.", "Apenas se o celular for roubado fisicamente."], c: 1 },
-        { q: "Qual o perigo da 'Engenharia Social' em conflitos digitais?", a: ["O erro no cálculo de pontes e estradas.", "Manipular pessoas para revelarem senhas ou informações estratégicas.", "Criar novos algoritmos de busca.", "Organizar festas através de aplicativos."], c: 1 },
-        { q: "Um cidadão digital consciente deve:", a: ["Aceitar todos os termos de uso sem ler.", "Avaliar criticamente quais permissões de localização concede aos apps.", "Compartilhar notícias bombásticas sem checar a fonte.", "Usar a mesma senha para todos os sites."], c: 1 },
-        { q: "Por que o Waze é considerado uma fonte de dados para monitoramento indireto?", a: ["Porque ele toca música durante a viagem.", "Porque revela padrões de movimento e concentração de pessoas em tempo real.", "Porque ele avisa sobre radares de velocidade.", "Porque ele funciona sem satélites."], c: 1 },
-        { q: "A guerra atual entre potências envolve menos trincheiras físicas e mais:", a: ["Disputas por terras agrícolas.", "Domínio de infraestruturas críticas e fluxos de dados.", "Uso de rádio amador.", "Cartas escritas à mão."], c: 1 },
-        { q: "No conflito moderno, um ataque cibernético contra centrífugas de energia serve para:", a: ["Acelerar a produção industrial.", "Sabotar a capacidade tecnológica ou nuclear do adversário sem disparar um tiro.", "Melhorar a eficiência elétrica.", "Monitorar o consumo de energia da população."], c: 1 },
-        { q: "O que significa dizer que os dados são o 'novo petróleo'?", a: ["Que eles poluem o meio ambiente.", "Que são o recurso mais valioso para o poder econômico e militar atual.", "Que eles podem ser queimados para gerar energia.", "Que são encontrados em perfurações no solo."], c: 1 },
-        { q: "A 'Coincidência Cibernética' aplicada à geopolítica sugere que:", a: ["Eventos digitais e físicos estão desconectados.", "Padrões digitais triviais coincidem com decisões de alto escalão político.", "Dois computadores nunca ligam ao mesmo tempo.", "A tecnologia é fruto do acaso."], c: 1 },
-        { q: "O bloqueio de certas plataformas de vídeo por governos geralmente é justificado por:", a: ["Falta de conteúdo educativo.", "Preocupação com a soberania de dados e espionagem estrangeira.", "O aplicativo ocupar muito espaço no celular.", "Os vídeos serem curtos demais."], c: 1 },
-        { q: "O que é 'Guerra Cibernética'?", a: ["Jogar games de guerra online.", "Ações coordenadas no espaço digital para interromper serviços essenciais do inimigo.", "Vender computadores para exércitos.", "Usar redes sociais para fazer amigos em outros países."], c: 1 },
-        { q: "A criptografia ponta-a-ponta é importante para a cidadania digital porque:", a: ["Torna a internet mais rápida.", "Garante que apenas o emissor e o receptor leiam a mensagem, protegendo a privacidade.", "Permite baixar arquivos maiores.", "Impede que o celular gaste bateria."], c: 1 },
-        { q: "Como a análise de 'Big Data' ajuda governos em tempos de tensão?", a: ["Ajuda a escolher as cores das bandeiras.", "Permite processar grandes volumes de informações públicas para detectar anomalias ou ameaças.", "Serve para apagar dados antigos.", "Não tem utilidade prática em conflitos."], c: 1 },
-        { q: "O que caracteriza a 'Desinformação' como tática de guerra?", a: ["Falar a verdade o tempo todo.", "Espalhar boatos deliberados para confundir a população e o exército adversário.", "Enviar mensagens de texto sem erros de português.", "Traduzir documentos oficiais corretamente."], c: 1 },
-        { q: "O termo 'Soberania Digital' refere-se a:", a: ["Um país ter o controle sobre seus próprios dados, infraestrutura e tecnologia.", "O rei de um país usar redes sociais.", "Comprar tecnologia apenas de um fornecedor.", "Não ter internet no país."], c: 0 },
-        { q: "Os 'Metadados' de um arquivo digital podem revelar:", a: ["Apenas o conteúdo do texto.", "Data, hora, autor e, às vezes, a localização da criação do arquivo.", "A cor física do computador usado.", "O preço que o usuário pagou pelo software."], c: 1 },
-        { q: "Por que a infraestrutura de cabos submarinos é estratégica?", a: ["Porque servem para pescar peixes raros.", "Porque por eles passa a quase totalidade do tráfego de internet mundial.", "Porque são usados para transporte de petróleo apenas.", "Porque não têm importância para a comunicação."], c: 1 },
-        { q: "O que é um ataque de 'Phishing'?", a: ["Um esporte de pescaria digital.", "Tentativa de enganar usuários para obter dados sensíveis através de mensagens falsas.", "Um tipo de hardware usado em satélites.", "Uma atualização de segurança do Windows."], c: 1 },
-        { q: "Na cidadania digital, o 'Direito ao Esquecimento' significa:", a: ["Poder apagar todas as memórias do seu cérebro.", "O direito de solicitar a remoção de dados pessoais de buscadores sob certas condições.", "Esquecer a senha do e-mail de propósito.", "Não precisar estudar para as provas."], c: 1 },
-        { q: "Qual o impacto dos algoritmos de recomendação na opinião pública?", a: ["Eles não influenciam as pessoas.", "Podem criar 'bolhas' que reforçam apenas uma visão de mundo, facilitando a polarização.", "Eles tornam todas as pessoas mais inteligentes automaticamente.", "Eles servem apenas para vender roupas."], c: 1 },
-        { q: "O uso de reconhecimento facial por governos gera debates sobre:", a: ["A beleza das pessoas nas fotos.", "O equilíbrio entre segurança pública e o direito à privacidade individual.", "A qualidade das câmeras de segurança.", "Como aplicar filtros de maquiagem."], c: 1 },
-        { q: "O que são 'Bots' no contexto de redes sociais e geopolítica?", a: ["Robôs físicos que entregam encomendas.", "Contas automatizadas usadas para inflar métricas ou espalhar mensagens em massa.", "Jogadores profissionais de videogame.", "Vírus que estragam a tela do celular."], c: 1 },
-        { q: "A 'Internet das Coisas' (IoT) aumenta o risco de ataques porque:", a: ["Os aparelhos são muito caros.", "Conecta muitos dispositivos simples que muitas vezes não possuem segurança robusta.", "Os aparelhos gastam muita internet.", "Ela não permite o uso de senhas."], c: 1 },
-        { q: "O que é 'Guerra de Informação'?", a: ["Destruir fisicamente todos os jornais.", "O uso estratégico da informação para influenciar atitudes e comportamentos de um público.", "Ler muitos livros sobre história.", "Ter acesso a bibliotecas digitais."], c: 1 },
-        { q: "Por que a tecnologia 5G é um ponto de disputa entre EUA e China?", a: ["Por causa da cor das antenas.", "Pelo controle da infraestrutura que conectará bilhões de dispositivos no futuro.", "Porque uma é mais lenta que a outra.", "Porque o 5G substitui o uso de satélites."], c: 1 },
-        { q: "O que é 'Ciberativismo'?", a: ["Praticar esportes usando sensores digitais.", "O uso da internet e redes sociais para promover causas políticas ou sociais.", "Trabalhar em empresas de tecnologia.", "Comprar produtos apenas pela internet."], c: 1 },
-        { q: "A 'Identidade Digital' de um cidadão é composta por:", a: ["Apenas o seu CPF.", "O conjunto de dados e registros que o identificam no ambiente online.", "A foto do seu perfil no Instagram.", "O modelo do seu smartphone."], c: 1 },
-        { q: "Qual a importância da 'Alfabetização Digital'?", a: ["Saber escrever rápido no teclado.", "Capacidade de localizar, analisar e usar informação de forma crítica no mundo digital.", "Saber os nomes de todas as peças de um computador.", "Ter muitos seguidores nas redes sociais."], c: 1 },
-        { q: "O termo 'Vulnerabilidade Zero-Day' refere-se a:", a: ["Um sistema que nunca apresenta erros.", "Uma falha de segurança desconhecida pelo fabricante e que não tem correção imediata.", "Um computador que funciona há zero dias.", "Uma senha que expira em 24 horas."], c: 1 },
-        { q: "Qual o papel da ética na tecnologia e cidadania digital?", a: ["Não tem papel, pois a tecnologia é neutra.", "Orientar o desenvolvimento e uso de ferramentas para que respeitem os direitos humanos e a coletividade.", "Serve para tornar os programas de computador mais bonitos.", "É um conjunto de regras para ganhar dinheiro mais rápido."], c: 1 }
+        { q: "O que o fenômeno 'Pizza Meter' revela sobre a segurança de órgãos governamentais?", a: ["A qualidade da alimentação dos funcionários.", "Que dados públicos de consumo podem indicar crises e horas extras em massa.", "O baixo orçamento para refeitórios internos.", "A preferência gastronômica de líderes mundiais."], c: "Que dados públicos de consumo podem indicar crises e horas extras em massa." },
+        { q: "Qual a relação entre o volume de pedidos em pizzarias e a inteligência estratégica?", a: ["Indica o nível de inflação de um país.", "Serve para medir o índice de felicidade da população.", "Funciona como um indicador não intencional de atividade intensa em centros de decisão.", "Ajuda a prever crises de abastecimento de trigo."], c: "Funciona como um indicador não intencional de atividade intensa em centros de decisão." },
+        { q: "A sigla OSINT refere-se a qual prática de inteligência?", a: ["Invasão de sistemas protegidos por senha.", "Coleta de dados em fontes abertas e disponíveis publicamente.", "Espionagem através de agentes infiltrados.", "Intercepção de chamadas telefônicas criptografadas."], c: "Coleta de dados em fontes abertas e disponíveis publicamente." },
+        { q: "Por que o monitoramento de entregas de comida é uma ferramenta de inteligência não oficial?", a: ["Porque as pizzarias são obrigadas a reportar dados ao exército.", "Porque revela padrões de comportamento humano que precedem grandes eventos políticos ou militares.", "Porque os entregadores funcionam como espiões disfarçados.", "Porque o preço da pizza oscila conforme o risco de guerra."], c: "Porque revela padrões de comportamento humano que precedem grandes eventos políticos ou militares." },
+        { q: "Dados de vendas de pizza são considerados 'segredos de estado'?", a: ["Sim, são protegidos por sigilo militar.", "Não, são dados comerciais que se tornam inteligência se analisados em conjunto.", "Sim, pois revelam a localização exata de bunkers.", "Não, são dados inúteis para qualquer exército."], c: "Não, são dados comerciais que se tornam inteligência se analisados em conjunto." },
+        { q: "Na guerra moderna, o que as linhas de triangulação entre satélites e solo representam?", a: ["A cobertura de sinal de TV 5G.", "A precisão necessária para monitoramento e direcionamento de sistemas.", "Rotas de aviões comerciais.", "Fronteiras invisíveis criadas pela ONU."], c: "A precisão necessária para monitoramento e direcionamento de sistemas." },
+        { q: "Como o monitoramento de tanques de petróleo via satélite afeta a economia de guerra?", a: ["Permite saber se o preço da gasolina vai baixar no posto.", "Revela o estoque estratégico e a capacidade de movimentação do adversário.", "Ajuda a encontrar novos poços de petróleo.", "Serve apenas para monitorar vazamentos ambientais."], c: "Revela o estoque estratégico e a capacidade de movimentação do adversário." },
+        { q: "O uso de GPS em aplicativos de corrida por soldados pode resultar em:", a: ["Melhora no condicionamento físico da tropa.", "Exposição de perímetros de bases militares antes desconhecidas.", "Ganho de pontos em programas de recompensa.", "Aumento da velocidade de ataque."], c: "Exposição de perímetros de bases militares antes desconhecidas." },
+        { q: "Qual a função principal dos drones discutidos durante as últimas duas aulas?", a: ["Entrega de suprimentos médicos.", "Reconhecimento e execução de ataques de precisão.", "Filmagem de eventos esportivos.", "Transmissão de Wi-fi para áreas rurais."], c: "Reconhecimento e execução de ataques de precisão." },
+        { q: "O que diferencia a vigilância por satélite hoje da de 20 anos atrás?", a: ["Hoje é feita apenas por governos.", "A alta resolução e o processamento de dados em tempo real por empresas privadas.", "Antigamente os satélites eram tripulados.", "Não houve mudança significativa."], c: "A alta resolução e o processamento de dados em tempo real por empresas privadas." },
+        { q: "Por que grandes líderes da tecnologia discutem publicamente temas como 'Risco' e 'Ética' na IA?", a: ["Estão promovendo novos modelos de smartphones.", "Existe uma preocupação real com o impacto da IA na segurança global e desinformação.", "Estão competindo para ver quem é mais rico.", "Querem banir a internet em zonas de guerra."], c: "Existe uma preocupação real com o impacto da IA na segurança global e desinformação." },
+        { q: "O que é um 'Risco Ético' no uso de IA em drones de ataque?", a: ["O drone acabar a bateria no meio do caminho.", "A máquina tomar decisões de vida ou morte sem supervisão humana clara.", "O custo elevado de manutenção do software.", "O drone ser barulhento demais."], c: "A máquina tomar decisões de vida ou morte sem supervisão humana clara." },
+        { q: "O termo 'Regulação' aplicado às Big Techs serve para:", a: ["Obrigar as empresas a darem lucro aos governos.", "Estabelecer limites legais sobre como dados e IA podem ser usados.", "Impedir que as pessoas usem redes sociais.", "Controlar o preço dos computadores."], c: "Estabelecer limites legais sobre como dados e IA podem ser usados." },
+        { q: "Deepfakes podem ser usados como arma tecnológica para:", a: ["Melhorar a qualidade de vídeos antigos.", "Criar pronunciamentos falsos de líderes para desestabilizar nações.", "Fazer filtros de diversão no Instagram.", "Aumentar a velocidade de download."], c: "Criar pronunciamentos falsos de líderes para desestabilizar nações." },
+        { q: "A OpenAI é um ator relevante no cenário geopolítico atual porque:", a: ["Criou robôs soldados físicos.", "Suas ferramentas de análise e geração de conteúdo podem influenciar a opinião pública e a estratégia.", "Ela é uma empresa do setor de petróleo.", "Ela fabrica mísseis guiados."], c: "Suas ferramentas de análise e geração de conteúdo podem influenciar a opinião pública e a estratégia." },
+        { q: "O que define a 'Pegada Digital' de um usuário?", a: ["O tamanho do seu celular.", "O rastro de dados deixado por atividades online, como curtidas e localizações.", "A senha do seu e-mail principal.", "O número de seguidores que ele possui."], c: "O rastro de dados deixado por atividades online, como curtidas e localizações." },
+        { q: "Como seu uso de redes sociais e apps pode afetar a sua privacidade e segurança?", a: ["Apenas se você postar fotos de documentos.", "Através da coleta silenciosa de metadados, localização e hábitos que formam um perfil explorável.", "Não afeta, pois os termos de uso garantem proteção total.", "Apenas se o celular for roubado fisicamente."], c: "Através da coleta silenciosa de metadados, localização e hábitos que formam um perfil explorável." },
+        { q: "Qual o perigo da 'Engenharia Social' em conflitos digitais?", a: ["O erro no cálculo de pontes e estradas.", "Manipular pessoas para revelarem senhas ou informações estratégicas.", "Criar novos algoritmos de busca.", "Organizar festas através de aplicativos."], c: "Manipular pessoas para revelarem senhas ou informações estratégicas." },
+        { q: "Um cidadão digital consciente deve:", a: ["Aceitar todos os termos de uso sem ler.", "Avaliar criticamente quais permissões de localização concede aos apps.", "Compartilhar notícias bombásticas sem checar a fonte.", "Usar a mesma senha para todos os sites."], c: "Avaliar criticamente quais permissões de localização concede aos apps." },
+        { q: "Por que o Waze é considerado uma fonte de dados para monitoramento indireto?", a: ["Porque ele toca música durante a viagem.", "Porque revela padrões de movimento e concentração de pessoas em tempo real.", "Porque ele avisa sobre radares de velocidade.", "Porque ele funciona sem satélites."], c: "Porque revela padrões de movimento e concentração de pessoas em tempo real." },
+        { q: "A guerra atual entre potências envolve menos trincheiras físicas e mais:", a: ["Disputas por terras agrícolas.", "Domínio de infraestruturas críticas e fluxos de dados.", "Uso de rádio amador.", "Cartas escritas à mão."], c: "Domínio de infraestruturas críticas e fluxos de dados." },
+        { q: "No conflito moderno, um ataque cibernético contra centrífugas de energia serve para:", a: ["Acelerar a produção industrial.", "Sabotar a capacidade tecnológica ou nuclear do adversário sem disparar um tiro.", "Melhorar a eficiência elétrica.", "Monitorar o consumo de energia da população."], c: "Sabotar a capacidade tecnológica ou nuclear do adversário sem disparar um tiro." },
+        { q: "O que significa dizer que os dados são o 'novo petróleo'?", a: ["Que eles poluem o meio ambiente.", "Que são o recurso mais valioso para o poder econômico e militar atual.", "Que eles podem ser queimados para gerar energia.", "Que são encontrados em perfurações no solo."], c: "Que são o recurso mais valioso para o poder econômico e militar atual." },
+        { q: "A 'Coincidência Cibernética' aplicada à geopolítica sugere que:", a: ["Eventos digitais e físicos estão desconectados.", "Padrões digitais triviais coincidem com decisões de alto escalão político.", "Dois computadores nunca ligam ao mesmo tempo.", "A tecnologia é fruto do acaso."], c: "Padrões digitais triviais coincidem com decisões de alto escalão político." },
+        { q: "O bloqueio de certas plataformas de vídeo por governos geralmente é justificado por:", a: ["Falta de conteúdo educativo.", "Preocupação com a soberania de dados e espionagem estrangeira.", "O aplicativo ocupar muito espaço no celular.", "Os vídeos serem curtos demais."], c: "Preocupação com a soberania de dados e espionagem estrangeira." },
+        { q: "O que é 'Guerra Cibernética'?", a: ["Jogar games de guerra online.", "Ações coordenadas no espaço digital para interromper serviços essenciais do inimigo.", "Vender computadores para exércitos.", "Usar redes sociais para fazer amigos em outros países."], c: "Ações coordenadas no espaço digital para interromper serviços essenciais do inimigo." },
+        { q: "A criptografia ponta-a-ponta é importante para a cidadania digital porque:", a: ["Torna a internet mais rápida.", "Garante que apenas o emissor e o receptor leiam a mensagem, protegendo a privacidade.", "Permite baixar arquivos maiores.", "Impede que o celular gaste bateria."], c: "Garante que apenas o emissor e o receptor leiam a mensagem, protegendo a privacidade." },
+        { q: "Como a análise de 'Big Data' ajuda governos em tempos de tensão?", a: ["Ajuda a escolher as cores das bandeiras.", "Permite processar grandes volumes de informações públicas para detectar anomalias ou ameaças.", "Serve para apagar dados antigos.", "Não tem utilidade prática em conflitos."], c: "Permite processar grandes volumes de informações públicas para detectar anomalias ou ameaças." },
+        { q: "O que caracteriza a 'Desinformação' como tática de guerra?", a: ["Falar a verdade o tempo todo.", "Espalhar boatos deliberados para confundir a população e o exército adversário.", "Enviar mensagens de texto sem erros de português.", "Traduzir documentos oficiais corretamente."], c: "Espalhar boatos deliberados para confundir a população e o exército adversário." },
+        { q: "O termo 'Soberania Digital' refere-se a:", a: ["Um país ter o controle sobre seus próprios dados, infraestrutura e tecnologia.", "O rei de um país usar redes sociais.", "Comprar tecnologia apenas de um fornecedor.", "Não ter internet no país."], c: "Um país ter o controle sobre seus próprios dados, infraestrutura e tecnologia." },
+        { q: "Os 'Metadados' de um arquivo digital podem revelar:", a: ["Apenas o conteúdo do texto.", "Data, hora, autor e, às vezes, a localização da criação do arquivo.", "A cor física do computador usado.", "O preço que o usuário pagou pelo software."], c: "Data, hora, autor e, às vezes, a localização da criação do arquivo." },
+        { q: "Por que a infraestrutura de cabos submarinos é estratégica?", a: ["Porque servem para pescar peixes raros.", "Porque por eles passa a quase totalidade do tráfego de internet mundial.", "Porque são usados para transporte de petróleo apenas.", "Porque não têm importância para a comunicação."], c: "Porque por eles passa a quase totalidade do tráfego de internet mundial." },
+        { q: "O que é um ataque de 'Phishing'?", a: ["Um esporte de pescaria digital.", "Tentativa de enganar usuários para obter dados sensíveis através de mensagens falsas.", "Um tipo de hardware usado em satélites.", "Uma atualização de segurança do Windows."], c: "Tentativa de enganar usuários para obter dados sensíveis através de mensagens falsas." },
+        { q: "Na cidadania digital, o 'Direito ao Esquecimento' significa:", a: ["Poder apagar todas as memórias do seu cérebro.", "O direito de solicitar a remoção de dados pessoais de buscadores sob certas condições.", "Esquecer a senha do e-mail de propósito.", "Não precisar estudar para as provas."], c: "O direito de solicitar a remoção de dados pessoais de buscadores sob certas condições." },
+        { q: "Qual o impacto dos algoritmos de recomendação na opinião pública?", a: ["Eles não influenciam as pessoas.", "Podem criar 'bolhas' que reforçam apenas uma visão de mundo, facilitando a polarização.", "Eles tornam todas as pessoas mais inteligentes automaticamente.", "Eles servem apenas para vender roupas."], c: "Podem criar 'bolhas' que reforçam apenas uma visão de mundo, facilitando a polarização." },
+        { q: "O uso de reconhecimento facial por governos gera debates sobre:", a: ["A beleza das pessoas nas fotos.", "O equilíbrio entre segurança pública e o direito à privacidade individual.", "A qualidade das câmeras de segurança.", "Como aplicar filtros de maquiagem."], c: "O equilíbrio entre segurança pública e o direito à privacidade individual." },
+        { q: "O que são 'Bots' no contexto de redes sociais e geopolítica?", a: ["Robôs físicos que entregam encomendas.", "Contas automatizadas usadas para inflar métricas ou espalhar mensagens em massa.", "Jogadores profissionais de videogame.", "Vírus que estragam a tela do celular."], c: "Contas automatizadas usadas para inflar métricas ou espalhar mensagens em massa." },
+        { q: "A 'Internet das Coisas' (IoT) aumenta o risco de ataques porque:", a: ["Os aparelhos são muito caros.", "Conecta muitos dispositivos simples que muitas vezes não possuem segurança robusta.", "Os aparelhos gastam muita internet.", "Ela não permite o uso de senhas."], c: "Conecta muitos dispositivos simples que muitas vezes não possuem segurança robusta." },
+        { q: "O que é 'Guerra de Informação'?", a: ["Destruir fisicamente todos os jornais.", "O uso estratégico da informação para influenciar atitudes e comportamentos de um público.", "Ler muitos livros sobre história.", "Ter acesso a bibliotecas digitais."], c: "O uso estratégico da informação para influenciar atitudes e comportamentos de um público." },
+        { q: "Por que a tecnologia 5G é um ponto de disputa entre EUA e China?", a: ["Por causa da cor das antenas.", "Pelo controle da infraestrutura que conectará bilhões de dispositivos no futuro.", "Porque uma é mais lenta que a outra.", "Porque o 5G substitui o uso de satélites."], c: "Pelo controle da infraestrutura que conectará bilhões de dispositivos no futuro." },
+        { q: "O que é 'Ciberativismo'?", a: ["Praticar esportes usando sensores digitais.", "O uso da internet e redes sociais para promover causas políticas ou sociais.", "Trabalhar em empresas de tecnologia.", "Comprar produtos apenas pela internet."], c: "O uso da internet e redes sociais para promover causas políticas ou sociais." },
+        { q: "A 'Identidade Digital' de um cidadão é composta por:", a: ["Apenas o seu CPF.", "O conjunto de dados e registros que o identificam no ambiente online.", "A foto do seu perfil no Instagram.", "O modelo do seu smartphone."], c: "O conjunto de dados e registros que o identificam no ambiente online." },
+        { q: "Qual a importância da 'Alfabetização Digital'?", a: ["Saber escrever rápido no teclado.", "Capacidade de localizar, analisar e usar informação de forma crítica no mundo digital.", "Saber os nomes de todas as peças de um computador.", "Ter muitos seguidores nas redes sociais."], c: "Capacidade de localizar, analisar e usar informação de forma crítica no mundo digital." },
+        { q: "O termo 'Vulnerabilidade Zero-Day' refere-se a:", a: ["Um sistema que nunca apresenta erros.", "Uma falha de segurança desconhecida pelo fabricante e que não tem correção imediata.", "Um computador que funciona há zero dias.", "Uma senha que expira em 24 horas."], c: "Uma falha de segurança desconhecida pelo fabricante e que não tem correção imediata." },
+        { q: "Qual o papel da ética na tecnologia e cidadania digital?", a: ["Não tem papel, pois a tecnologia é neutra.", "Orientar o desenvolvimento e uso de ferramentas para que respeitem os direitos humanos e a coletividade.", "Serve para tornar os programas de computador mais bonitos.", "É um conjunto de regras para ganhar dinheiro mais rápido."], c: "Orientar o desenvolvimento e uso de ferramentas para que respeitem os direitos humanos e a coletividade." }
     ];
 
     function embaralhar(array) {
@@ -147,16 +147,36 @@
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
+    async function carregarRanking() {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const ranking = await response.json();
+            const corpo = document.getElementById('corpoRankingInicio');
+            corpo.innerHTML = "";
+            
+            ranking.forEach((item, index) => {
+                const medalha = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
+                corpo.innerHTML += `<tr><td>${medalha}${index + 1}º</td><td style="text-align:left">${item.grupo}</td><td><strong>${item.acertos}/15</strong></td><td>${formatarTempo(item.tempo)}</td></tr>`;
+            });
+            document.getElementById('loaderRanking').classList.add('hidden');
+            document.getElementById('tabelaRankingInicio').classList.remove('hidden');
+        } catch (e) {
+            document.getElementById('loaderRanking').innerText = "Ranking ainda vazio ou erro de conexão.";
+        }
+    }
+
     function iniciarQuiz() {
         const grupo = document.getElementById('nomeGrupo').value.trim();
         const lista = document.getElementById('integrantes').value.trim();
-        
-        if(!grupo || !lista) return alert("Por favor, identifique o grupo e os integrantes!");
+        if(!grupo || !lista) return alert("Por favor, identifique o grupo!");
 
         document.getElementById('setup').classList.add('hidden');
         document.getElementById('quizContainer').classList.remove('hidden');
         
-        selecionadas = embaralhar([...bancoQuestoes]).slice(0, 15);
+        // Sorteia 15 questões e para cada uma embaralha as alternativas
+        selecionadas = embaralhar([...bancoQuestoes]).slice(0, 15).map(q => {
+            return { ...q, a: embaralhar([...q.a]) };
+        });
 
         const container = document.getElementById('questoesArea');
         container.innerHTML = "";
@@ -167,7 +187,7 @@
                     <div class="opcoes-lista">
                         ${p.a.map((opt, j) => `
                             <label class="opcao-item">
-                                <input type="radio" name="q${i}" value="${j}">
+                                <input type="radio" name="q${i}" value="${opt.replace(/"/g, '&quot;')}">
                                 <span class="opcao-text">${opt}</span>
                             </label>
                         `).join('')}
@@ -189,7 +209,7 @@
 
         selecionadas.forEach((p, i) => {
             const res = document.querySelector(`input[name="q${i}"]:checked`);
-            if(res && parseInt(res.value) === p.c) acertos++;
+            if(res && res.value === p.c) acertos++;
         });
 
         const dados = {
@@ -202,41 +222,11 @@
         document.getElementById('quizContainer').innerHTML = "<h2>Enviando resultados...</h2>";
         
         try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dados)
-            });
-            document.getElementById('statusEnvio').innerHTML = "✅ Resultados enviados!";
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('posEnvio').classList.remove('hidden');
         } catch (e) {
-            document.getElementById('statusEnvio').innerHTML = "⚠️ Falha ao enviar dados.";
-        }
-
-        setTimeout(carregarRanking, 1000);
-    }
-
-    async function carregarRanking() {
-        document.getElementById('quizContainer').classList.add('hidden');
-        document.getElementById('rankingContainer').classList.remove('hidden');
-        
-        try {
-            const response = await fetch(SCRIPT_URL);
-            const ranking = await response.json();
-            const corpo = document.getElementById('corpoRanking');
-            corpo.innerHTML = "";
-            
-            ranking.forEach((item, index) => {
-                const medalha = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
-                corpo.innerHTML += `
-                    <tr>
-                        <td>${medalha}${index + 1}º</td>
-                        <td style="text-align:left">${item.grupo}</td>
-                        <td><strong>${item.acertos}/15</strong></td>
-                        <td>${formatarTempo(item.tempo)}</td>
-                    </tr>`;
-            });
-        } catch (e) {
-            document.getElementById('corpoRanking').innerHTML = "<tr><td colspan='4'>Erro ao carregar ranking.</td></tr>";
+            alert("Erro ao enviar. Tente novamente.");
         }
     }
 </script>
