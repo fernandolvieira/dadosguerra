@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Dados, Tecnologia e Cidadania</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 20px; background: #e9ecef; color: #333; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .hidden { display: none; }
+        h1, h2 { color: #0056b3; text-align: center; }
+        input, button { padding: 12px; margin: 10px 0; width: 100%; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        #timer { font-size: 22px; color: #dc3545; font-weight: bold; text-align: right; position: sticky; top: 10px; }
+        .pergunta { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 5px solid #007bff; }
+        .pergunta p { font-weight: bold; margin-bottom: 10px; }
+        label { display: block; padding: 5px 0; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="setup">
+    <h1>Desafio: Dados & Guerra</h1>
+    <p style="text-align:center">Exercício em grupo (1h). Responda às 15 questões sorteadas.</p>
+    <input type="text" id="nomeGrupo" placeholder="Nome do Grupo">
+    <textarea id="integrantes" placeholder="Nome dos 4 Integrantes" style="width:100%; height:80px; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
+    <button onclick="iniciarQuiz()">Iniciar Desafio</button>
+</div>
+
+<div class="card hidden" id="quizContainer">
+    <div id="timer">Tempo: 0s</div>
+    <div id="questoes"></div>
+    <button onclick="finalizarQuiz()" style="background: #28a745;">Finalizar e Ver Ranking</button>
+</div>
+
+<div class="card hidden" id="rankingContainer">
+    <h2>🏆 Ranking Oficial</h2>
+    <div id="resultadoFinal" style="text-align:center; font-size:18px; margin-bottom:20px;"></div>
+    <table id="tabelaRanking">
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Grupo</th>
+                <th>Acertos</th>
+                <th>Tempo</th>
+            </tr>
+        </thead>
+        <tbody id="corpoRanking"></tbody>
+    </table>
+    <button onclick="location.reload()" style="background: #6c757d; margin-top:20px;">Reiniciar Exercício</button>
+</div>
+
+<script>
+    // --- CONFIGURAÇÃO ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDiNXJ1sniwLmkwhvP8EH9Huj0jI8tNHFILchrR_KBik2aSKLJIux4a0PxyabkO-2K/exec"; 
+    const TOTAL_SORTEIO = 15;
+    
+    let tempoInicio, intervalo;
+    let questoesSorteadas = [];
+
+    // Banco de 45 questões
+    const bancoQuestoes = [
+        { q: "O que o 'Pizza Meter' indica em prédios governamentais?", a: ["Fim do expediente", "Crises internacionais iminentes", "Promoções locais", "Falta de verba para comida"], c: 1 },
+        { q: "Qual o termo para inteligência obtida de fontes públicas?", a: ["SIGINT", "HUMINT", "OSINT", "CYBINT"], c: 2 },
+        { q: "Na guerra moderna, dados de GPS de apps de corrida podem revelar:", a: ["Novas tecnologias", "Bases militares secretas", "Saúde dos civis", "Preço de satélites"], c: 1 },
+        { q: "Qual o risco ético principal da IA autônoma em conflitos?", a: ["Gasto de energia", "Velocidade da internet", "Responsabilização por erros letais", "Custo do software"], c: 2 },
+        { q: "O que são 'dados indiretos'?", a: ["Dados criptografados", "Informações que revelam padrões por correlação", "Dados apagados", "E-mails oficiais"], c: 1 },
+        { q: "No conflito EUA x Irã, satélites são usados para:", a: ["Mudar o clima", "Bloquear rádio amador", "Vigilância e precisão de alvos", "Transmitir TV aberta"], c: 2 },
+        { q: "A 'Pegada Digital' de um soldado pode ser usada para:", a: ["Melhorar o sinal de celular", "Engenharia social e ataques direcionados", "Aumentar seu salário", "Privacidade total"], c: 1 },
+        { q: "O que caracteriza uma Guerra Híbrida?", a: ["Uso de cavalaria", "Combinação de ataques físicos e cibernéticos", "Guerra sem armas", "Apenas propaganda"], c: 1 },
+        { q: "Qual órgão foi citado com 980 pizzas pedidas em uma noite?", a: ["Casa Branca", "Pentágono", "Departamento de Estado", "Capitólio"], c: 1 },
+        { q: "Cidadania digital envolve:", a: ["Postar tudo o que faz", "Uso crítico e seguro da tecnologia", "Hackear o inimigo", "Não usar a internet"], c: 1 },
+        { q: "Metadados em fotos de redes sociais podem conter:", a: ["Apenas a cor da imagem", "Coordenadas GPS de onde foi tirada", "O nome da câmera apenas", "Nada relevante"], c: 1 },
+        { q: "Empresas como OpenAI e Meta são cruciais na geopolítica porque:", a: ["Vendem hardware", "Controlam o fluxo de informação e dados", "São donas dos satélites", "Não possuem regulação"], c: 1 },
+        { q: "O termo 'Coincidência Cibernética' no slide 3 refere-se a:", a: ["Vírus de computador", "Dados públicos prevendo ações de poder", "Erros de sistema", "Sincronização de relógios"], c: 1 },
+        { q: "O Waze pode ser uma ferramenta de inteligência porque:", a: ["Mostra lojas", "Indica agrupamentos anômalos de pessoas/trânsito", "É um app de música", "Não usa internet"], c: 1 },
+        { q: "A regulação da IA é um tema de:", a: ["Marketing", "Segurança Nacional e Ética", "Entretenimento", "Apenas finanças"], c: 1 },
+        // ... (Para simplificar o exemplo, as demais questões seguem o padrão de temas da aula)
+        { q: "A análise de imagens de tanques de petróleo via satélite ajuda a prever:", a: ["O clima", "A economia e estoque estratégico do inimigo", "Novos feriados", "Acidentes marítimos"], c: 1 },
+        { q: "Deepfakes podem ser usados em guerras para:", a: ["Melhorar fotos", "Criar desinformação e ordens falsas", "Aumentar a resolução", "Traduzir textos"], c: 1 },
+        { q: "O que é 'Social Engineering' (Engenharia Social)?", a: ["Construir prédios", "Manipular pessoas para obter dados", "Programar redes", "Design de interface"], c: 1 },
+        { q: "Segurança de Dados é responsabilidade de:", a: ["Apenas do TI", "Apenas do Governo", "Todos os cidadãos e usuários", "Empresas de antivírus"], c: 2 },
+        { q: "O aumento de buscas no Google por 'estocar comida' pode indicar:", a: ["Nova dieta", "Pânico social ou crise iminente", "Erro no algoritmo", "Promoção de mercado"], c: 1 }
+    ];
+
+    // Preencher as 45 questões com variações dos temas (Aqui você deve completar até as 45 conforme sua aula)
+    while(bancoQuestoes.length < 45) {
+        bancoQuestoes.push({
+            q: `Questão Extra sobre Tecnologia e Guerra ${bancoQuestoes.length + 1}`,
+            a: ["Opção A", "Opção Correta", "Opção C", "Opção D"],
+            c: 1
+        });
+    }
+
+    function embaralhar(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function iniciarQuiz() {
+        const grupo = document.getElementById('nomeGrupo').value;
+        const lista = document.getElementById('integrantes').value;
+        if(!grupo || !lista) return alert("Por favor, preencha o nome do grupo e os integrantes.");
+
+        document.getElementById('setup').classList.add('hidden');
+        document.getElementById('quizContainer').classList.remove('hidden');
+        
+        // Sorteia 15 questões das 45
+        questoesSorteadas = embaralhar([...bancoQuestoes]).slice(0, TOTAL_SORTEIO);
+
+        const divQuestoes = document.getElementById('questoes');
+        divQuestoes.innerHTML = "";
+        questoesSorteadas.forEach((p, i) => {
+            divQuestoes.innerHTML += `
+                <div class="pergunta">
+                    <p>${i + 1}. ${p.q}</p>
+                    ${p.a.map((opt, j) => `
+                        <label>
+                            <input type="radio" name="q${i}" value="${j}"> ${opt}
+                        </label>
+                    `).join('')}
+                </div>`;
+        });
+
+        tempoInicio = Date.now();
+        intervalo = setInterval(() => {
+            document.getElementById('timer').innerText = `Tempo: ${Math.floor((Date.now() - tempoInicio) / 1000)}s`;
+        }, 1000);
+    }
+
+    async function finalizarQuiz() {
+        clearInterval(intervalo);
+        const tempoFinal = Math.floor((Date.now() - tempoInicio) / 1000);
+        let acertos = 0;
+
+        questoesSorteadas.forEach((p, i) => {
+            const selecionada = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selecionada && parseInt(selecionada.value) === p.c) acertos++;
+        });
+
+        const dados = {
+            grupo: document.getElementById('nomeGrupo').value,
+            integrantes: document.getElementById('integrantes').value,
+            acertos: acertos,
+            tempo: tempoFinal
+        };
+
+        document.getElementById('quizContainer').innerHTML = "<h2>Enviando resultados...</h2>";
+        
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(dados)
+            });
+        } catch (e) { console.log("Erro ao enviar, mas prosseguindo para o ranking..."); }
+
+        setTimeout(carregarRanking, 1500);
+    }
+
+    async function carregarRanking() {
+        document.getElementById('quizContainer').classList.add('hidden');
+        document.getElementById('rankingContainer').classList.remove('hidden');
+        
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const ranking = await response.json();
+            
+            const corpo = document.getElementById('corpoRanking');
+            corpo.innerHTML = "";
+            
+            ranking.forEach((item, index) => {
+                const medalha = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${medalha}${index + 1}º</td>
+                        <td>${item.grupo}</td>
+                        <td><strong>${item.acertos}</strong></td>
+                        <td>${item.tempo}s</td>
+                    </tr>`;
+            });
+        } catch (e) {
+            document.getElementById('corpoRanking').innerHTML = "<tr><td colspan='4'>Erro ao carregar ranking. Verifique a URL do Script.</td></tr>";
+        }
+    }
+</script>
+
+</body>
+</html>
