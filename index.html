@@ -5,25 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desafio Digital: Dados, Tecnologia e Geopolítica</title>
     <style>
-        :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; --gray-light: #f1f3f5; --gray-border: #dee2e6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; line-height: 1.5; }
         .container { max-width: 850px; margin: auto; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .hidden { display: none; }
         h1, h2 { color: #0056b3; text-align: center; margin-top: 0; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        input[type="text"], textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #0056b3; }
-        #timer { font-size: 24px; color: var(--danger); font-weight: bold; text-align: right; position: sticky; top: 10px; z-index: 100; background: white; padding: 5px; border-radius: 5px; display: inline-block; float: right; }
-        .pergunta { background: #fdfdfd; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 6px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .pergunta p { font-weight: 600; font-size: 18px; margin-bottom: 15px; }
-        label { display: block; padding: 8px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-        label:hover { background: #f0f7ff; }
+        
+        #timer { font-size: 24px; color: var(--danger); font-weight: bold; text-align: right; position: sticky; top: 10px; z-index: 100; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-border); display: inline-block; float: right; }
+        
+        .pergunta { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--gray-border); }
+        .pergunta p { font-weight: 600; font-size: 18px; margin-bottom: 15px; color: #000; }
+
+        /* Estilo das Alternativas Corrigido */
+        .opcao-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--gray-light);
+            margin-bottom: 10px;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--gray-border);
+        }
+        .opcao-item:hover { background-color: #e9ecef; border-color: var(--primary); }
+        .opcao-item input[type="radio"] { margin-right: 15px; width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; }
+        .opcao-text { font-size: 16px; color: #333; cursor: pointer; flex-grow: 1; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
         th { background: var(--primary); color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .ranking-destaque { color: var(--success); font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
@@ -31,21 +47,22 @@
 <div class="container">
     <div class="card" id="setup">
         <h1>🛡️ Dados, Tecnologia e Cidadania</h1>
-        <p style="text-align:center">Exercício em grupo (4 alunos). 15 questões sorteadas. Tempo limite sugerido: 1h.</p>
-        <input type="text" id="nomeGrupo" placeholder="Identificação do Grupo (Ex: Grupo 01 - 3º A)">
-        <textarea id="integrantes" placeholder="Nomes completos dos 4 integrantes" style="height: 100px;"></textarea>
-        <button onclick="iniciarQuiz()">INICIAR EXERCÍCIO</button>
+        <p style="text-align:center">Exercício em grupo (4 alunos). 15 questões sorteadas. Tempo sugerido: 1h.</p>
+        <input type="text" id="nomeGrupo" placeholder="Identificação do Grupo (Ex: Grupo Alpha - 3º Ano)">
+        <textarea id="integrantes" placeholder="Nomes completos dos 4 integrantes"></textarea>
+        <button onclick="iniciarQuiz()">INICIAR DESAFIO</button>
     </div>
 
     <div class="card hidden" id="quizContainer">
         <div id="timer">00:00</div>
+        <div style="clear: both;"></div>
         <div id="questoesArea"></div>
-        <button onclick="finalizarQuiz()" style="background: var(--success); margin-top: 20px;">ENVIAR RESPOSTAS E VER RANKING</button>
+        <button onclick="finalizarQuiz()" style="background: var(--success);">FINALIZAR E ENVIAR</button>
     </div>
 
     <div class="card hidden" id="rankingContainer">
         <h2>🏆 Ranking da Atividade</h2>
-        <div id="statusEnvio" style="text-align:center; margin-bottom: 15px;"></div>
+        <div id="statusEnvio" style="text-align:center; margin-bottom: 15px; font-weight: bold;"></div>
         <table>
             <thead>
                 <tr>
@@ -57,12 +74,12 @@
             </thead>
             <tbody id="corpoRanking"></tbody>
         </table>
-        <button onclick="location.reload()" style="background: var(--secondary); margin-top: 20px;">RECOMEÇAR</button>
+        <button onclick="location.reload()" style="background: var(--secondary);">RECOMEÇAR</button>
     </div>
 </div>
 
 <script>
-   
+
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDiNXJ1sniwLmkwhvP8EH9Huj0jI8tNHFILchrR_KBik2aSKLJIux4a0PxyabkO-2K/exec"; 
 
     let tempoInicio, intervalo;
@@ -134,12 +151,11 @@
         const grupo = document.getElementById('nomeGrupo').value.trim();
         const lista = document.getElementById('integrantes').value.trim();
         
-        if(!grupo || !lista) return alert("Por favor, preencha a identificação do grupo e dos alunos!");
+        if(!grupo || !lista) return alert("Por favor, identifique o grupo e os integrantes!");
 
         document.getElementById('setup').classList.add('hidden');
         document.getElementById('quizContainer').classList.remove('hidden');
         
-        // Sorteia 15 questões das 45
         selecionadas = embaralhar([...bancoQuestoes]).slice(0, 15);
 
         const container = document.getElementById('questoesArea');
@@ -148,11 +164,14 @@
             container.innerHTML += `
                 <div class="pergunta">
                     <p>${i + 1}. ${p.q}</p>
-                    ${p.a.map((opt, j) => `
-                        <label>
-                            <input type="radio" name="q${i}" value="${j}"> ${opt}
-                        </label>
-                    `).join('')}
+                    <div class="opcoes-lista">
+                        ${p.a.map((opt, j) => `
+                            <label class="opcao-item">
+                                <input type="radio" name="q${i}" value="${j}">
+                                <span class="opcao-text">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
                 </div>`;
         });
 
@@ -180,21 +199,20 @@
             tempo: tempoSegundos
         };
 
-        document.getElementById('quizContainer').innerHTML = "<h2>Enviando resultados e processando ranking...</h2>";
+        document.getElementById('quizContainer').innerHTML = "<h2>Enviando resultados...</h2>";
         
         try {
-            // Envio via POST (JSON)
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(dados)
             });
-            document.getElementById('statusEnvio').innerHTML = "✅ Resultados salvos com sucesso!";
+            document.getElementById('statusEnvio').innerHTML = "✅ Resultados enviados!";
         } catch (e) {
-            document.getElementById('statusEnvio').innerHTML = "⚠️ Erro ao salvar, mas carregando ranking...";
+            document.getElementById('statusEnvio').innerHTML = "⚠️ Falha ao enviar dados.";
         }
 
-        setTimeout(carregarRanking, 1500);
+        setTimeout(carregarRanking, 1000);
     }
 
     async function carregarRanking() {
@@ -204,7 +222,6 @@
         try {
             const response = await fetch(SCRIPT_URL);
             const ranking = await response.json();
-            
             const corpo = document.getElementById('corpoRanking');
             corpo.innerHTML = "";
             
@@ -214,12 +231,12 @@
                     <tr>
                         <td>${medalha}${index + 1}º</td>
                         <td style="text-align:left">${item.grupo}</td>
-                        <td class="ranking-destaque">${item.acertos}/15</td>
+                        <td><strong>${item.acertos}/15</strong></td>
                         <td>${formatarTempo(item.tempo)}</td>
                     </tr>`;
             });
         } catch (e) {
-            document.getElementById('corpoRanking').innerHTML = "<tr><td colspan='4'>Erro ao carregar ranking. Tente recarregar a página.</td></tr>";
+            document.getElementById('corpoRanking').innerHTML = "<tr><td colspan='4'>Erro ao carregar ranking.</td></tr>";
         }
     }
 </script>
