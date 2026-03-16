@@ -47,10 +47,10 @@
 <div class="container">
     <div class="card" id="setup">
         <h1>🛡️ Desafio: Dados e Geopolítica</h1>
-        <p style="text-align:center">Exercício em grupo (15 questões aleatórias).</p>
+        <p style="text-align:center">Exercício em grupo para o 9º Ano (15 questões aleatórias).</p>
         
         <input type="text" id="nomeGrupo" placeholder="Nome do Grupo">
-        <textarea id="integrantes" placeholder="Nomes dos 4 integrantes"></textarea>
+        <textarea id="integrantes" placeholder="Nomes dos integrantes do grupo"></textarea>
         <button onclick="iniciarQuiz()">INICIAR DESAFIO AGORA</button>
 
         <div class="ranking-area">
@@ -74,65 +74,168 @@
 
     <div class="card hidden" id="posEnvio">
         <h2>✅ Exercício Concluído!</h2>
-        <p style="text-align:center; font-size: 18px;">Seus dados foram enviados com sucesso para a planilha do professor.</p>
+        <p style="text-align:center; font-size: 18px;">Seus dados foram enviados com sucesso para a planilha do professor Fernando.</p>
         <button onclick="location.reload()">VOLTAR AO INÍCIO</button>
     </div>
 </div>
 
 <script>
-    // URL DO SEU SCRIPT DO GOOGLE (Mantenha a mesma que você já tem)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDiNXJ1sniwLmkwhvP8EH9Huj0jI8tNHFILchrR_KBik2aSKLJIux4a0PxyabkO-2K/exec"; 
 
     let tempoInicio, intervalo;
     let selecionadas = [];
 
-    // BANCO DE QUESTÕES ATUALIZADO (Melhor contextualização e tamanho das erradas)
     const bancoQuestoes = [
-        { q: "O que o fenômeno 'Pizza Meter' revela sobre a segurança de órgãos governamentais?", a: ["A eficiência dos serviços de logística e entrega em áreas diplomáticas.", "Que dados públicos de consumo podem indicar crises e horas extras em massa.", "O nível de satisfação e os benefícios alimentares dos funcionários públicos.", "A necessidade de contratos de exclusividade com fornecedores locais de alimento."], c: "Que dados públicos de consumo podem indicar crises e horas extras em massa." },
-        { q: "Qual a relação entre o volume de pedidos em pizzarias e a inteligência estratégica?", a: ["Indica variações no poder de compra e na inflação de alimentos básicos.", "Serve para monitorar o índice de bem-estar e felicidade da população urbana.", "Funciona como um indicador não intencional de atividade intensa em centros de decisão.", "Ajuda governos a prever crises de abastecimento e logística de trigo."], c: "Funciona como um indicador não intencional de atividade intensa em centros de decisão." },
-        { q: "A sigla OSINT refere-se a qual prática de inteligência?", a: ["Invasão de sistemas protegidos por criptografia militar avançada.", "Coleta de dados em fontes abertas e disponíveis publicamente.", "Recrutamento e espionagem através de agentes infiltrados em campo.", "Intercepção de comunicações via satélite em tempo real."], c: "Coleta de dados em fontes abertas e disponíveis publicamente." },
-        { q: "Por que o monitoramento de entregas de comida é uma ferramenta de inteligência não oficial?", a: ["Porque os estabelecimentos são obrigados a reportar dados ao exército nacional.", "Porque revela padrões de comportamento humano que precedem grandes eventos políticos ou militares.", "Porque os entregadores são frequentemente treinados como observadores de campo.", "Porque o custo da logística de entrega aumenta drasticamente em áreas de conflito."], c: "Porque revela padrões de comportamento humano que precedem grandes eventos políticos ou militares." },
-        { q: "Dados de vendas de pizza são considerados 'segredos de estado'?", a: ["Sim, pois estão protegidos por leis rigorosas de sigilo militar.", "Não, são dados comerciais que se tornam inteligência se analisados em conjunto.", "Sim, porque revelam a localização exata de bunkers e instalações governamentais underground.", "Não, são informações irrelevantes para qualquer estratégia de defesa nacional."], c: "Não, são dados comerciais que se tornam inteligência se analisados em conjunto." },
-        { q: "Na guerra moderna, o que as linhas de triangulação entre satélites e solo representam?", a: ["A qualidade da cobertura e a velocidade do sinal de internet 5G na região.", "A precisão necessária para monitoramento e direcionamento de sistemas.", "As rotas comerciais de aviões cargueiros e drones de entrega.", "As fronteiras geopolíticas invisíveis monitoradas pela ONU."], c: "A precisão necessária para monitoramento e direcionamento de sistemas." },
-        { q: "Como o monitoramento de tanques de petróleo via satélite afeta a economia de guerra?", a: ["Permite previsões exatas sobre a redução de preços nos postos de combustível locais.", "Revela o estoque estratégico e a capacidade de movimentação do adversário.", "Auxilia na descoberta geológica de novos poços e reservas de gás natural.", "Serve apenas para monitorar e relatar vazamentos ambientais em alto-mar."], c: "Revela o estoque estratégico e a capacidade de movimentação do adversário." },
-        { q: "O uso de GPS em aplicativos de corrida por soldados pode resultar em:", a: ["Melhora significativa no condicionamento físico e eficiência da tropa.", "Exposição de perímetros de bases militares antes desconhecidas.", "Acúmulo de pontos em programas de fidelidade e recompensa digital.", "Aumento monitorado da velocidade de ataque das unidades de infantaria."], c: "Exposição de perímetros de bases militares antes desconhecidas." },
-        { q: "Qual a função principal dos drones militares discutidos nas aulas?", a: ["Entrega logística de suprimentos médicos e alimentos em áreas de difícil acesso.", "Reconhecimento e execução de ataques de precisão.", "Filmagem e transmissão em alta resolução de eventos esportivos e artísticos.", "Expansão da cobertura de sinal Wi-Fi em zonas rurais ou de desastre."], c: "Reconhecimento e execução de ataques de precisão." },
-        { q: "O que diferencia a vigilância por satélite hoje da de 20 anos atrás?", a: ["Hoje é uma exclusividade de governos de superpotências militares.", "A alta resolução e o processamento de dados em tempo real por empresas privadas.", "Antigamente os satélites eram operados manualmente por tripulações espaciais.", "Não houve mudança tecnológica ou operacional significativa nas últimas décadas."], c: "A alta resolução e o processamento de dados em tempo real por empresas privadas." },
-        { q: "Por que grandes líderes da tecnologia discutem publicamente temas como 'Risco' e 'Ética' na IA?", a: ["Estão focados em promover novos modelos de smartphones e dispositivos de consumo.", "Existe uma preocupação real com o impacto da IA na segurança global e desinformação.", "Estão competindo para definir quem é o executivo mais influente e rico do setor.", "Desejam banir o uso da internet e redes sociais em zonas de conflito armado."], c: "Existe uma preocupação real com o impacto da IA na segurança global e desinformação." },
-        { q: "O que é um 'Risco Ético' no uso de IA em drones de ataque?", a: ["O risco de a bateria do dispositivo acabar antes de completar a missão.", "A máquina tomar decisões de vida ou morte sem supervisão humana clara.", "O custo elevado de desenvolvimento e manutenção do software de navegação.", "A possibilidade de o drone ser detectado devido ao ruído dos motores."], c: "A máquina tomar decisões de vida ou morte sem supervisão humana clara." },
-        { q: "O termo 'Regulação' aplicado às Big Techs serve para:", a: ["Obrigar as empresas privadas a transferirem seus lucros diretamente aos governos.", "Estabelecer limites legais sobre como dados e IA podem ser usados.", "Proibir terminantemente que a população utilize redes sociais e serviços de busca.", "Controlar e fixar os preços de computadores e dispositivos móveis no mercado."], c: "Estabelecer limites legais sobre como dados e IA podem ser usados." },
-        { q: "Deepfakes podem ser usados como arma tecnológica para:", a: ["Melhorar a resolução e a qualidade de vídeos históricos antigos.", "Criar pronunciamentos falsos de líderes para desestabilizar nações.", "Desenvolver filtros de entretenimento e realidade aumentada para redes sociais.", "Aumentar a velocidade de download de arquivos de mídia complexos."], c: "Criar pronunciamentos falsos de líderes para desestabilizar nações." },
-        { q: "A OpenAI é um ator relevante no cenário geopolítico atual porque:", a: ["Desenvolveu robôs soldados físicos para combate em ambientes urbanos.", "Suas ferramentas de análise e geração de conteúdo podem influenciar a opinião pública e a estratégia.", "Atua primariamente na exploração e refino de petróleo em zonas de tensão.", "É a principal fabricante de mísseis guiados por laser para forças aéreas."], c: "Suas ferramentas de análise e geração de conteúdo podem influenciar a opinião pública e a estratégia." },
-        { q: "O que define a 'Pegada Digital' de um usuário?", a: ["O tamanho físico do seu smartphone ou dispositivo de acesso à internet.", "O rastro de dados deixado por atividades online, como curtidas e localizações.", "A complexidade da senha do seu e-mail e contas bancárias principais.", "O número total de seguidores e conexões que ele possui nas redes sociais."], c: "O rastro de dados deixado por atividades online, como curtidas e localizações." },
-        { q: "Como seu uso de redes sociais e apps pode afetar a sua privacidade e segurança?", a: ["Apenas se você compartilhar fotos de documentos oficiais ou senhas.", "Através da coleta silenciosa de metadados, localização e hábitos que formam um perfil explorável.", "Não afeta de forma alguma, pois os termos de uso garantem proteção total dos dados.", "Apenas se o dispositivo físico for roubado ou acessado sem autorização."], c: "Através da coleta silenciosa de metadados, localização e hábitos que formam um perfil explorável." },
-        { q: "Qual o perigo da 'Engenharia Social' em conflitos digitais?", a: ["O erro nos cálculos de engenharia civil para construção de infraestrutura física.", "Manipular pessoas para revelarem senhas ou informações estratégicas.", "O desenvolvimento de novos algoritmos de busca e indexação de dados.", "A organização de eventos e manifestações públicas através de aplicativos de mensagem."], c: "Manipular pessoas para revelarem senhas ou informações estratégicas." },
-        { q: "Um cidadão digital consciente deve:", a: ["Aceitar todos os termos de uso e políticas de privacidade sem leitura prévia.", "Avaliar criticamente quais permissões de localização e dados concede aos apps.", "Compartilhar notícias impactantes imediatamente, sem checar a veracidade da fonte.", "Utilizar a mesma senha alfanumérica para facilitar o acesso a todos os sites."], c: "Avaliar criticamente quais permissões de localização e dados concede aos apps." },
-        { q: "Por que o Waze é considerado uma fonte de dados para monitoramento indireto?", a: ["Porque ele oferece funcionalidades de streaming de música durante a navegação.", "Porque revela padrões de movimento e concentração de pessoas em tempo real.", "Porque fornece alertas sobre a localização de radares de velocidade e fiscalização.", "Porque opera exclusivamente através de frequências de rádio, sem usar satélites."], c: "Porque revela padrões de movimento e concentração de pessoas em tempo real." },
-        { q: "A guerra atual entre potências envolve menos trincheiras físicas e mais:", a: ["Disputas territoriais diretas por áreas de produção agrícola e pecuária.", "Domínio de infraestruturas críticas e fluxos de dados.", "Uso intensivo de frequências de rádio amador para comunicação tática.", "Troca de correspondências e documentos diplomáticos escritos à mão."], c: "Domínio de infraestruturas críticas e fluxos de dados." },
-        { q: "No conflito moderno, um ataque cibernético contra centrífugas de energia serve para:", a: ["Acelerar a produção industrial e a eficiência de fábricas de armamento.", "Sabotar a capacidade tecnológica ou nuclear do adversário sem disparar um tiro.", "Otimizar o consumo de energia elétrica da população civil em áreas urbanas.", "Monitorar o fluxo de dados e o consumo de energia da rede doméstica."], c: "Sabotar a capacidade tecnológica ou nuclear do adversário sem disparar um tiro." },
-        { q: "O que significa dizer que os dados são o 'novo petróleo'?", a: ["Que eles causam danos ambientais significativos se não forem gerenciados corretamente.", "Que são o recurso mais valioso para o poder econômico e militar atual.", "Que podem ser processados e queimados para gerar energia térmica e elétrica.", "Que são encontrados em camadas profundas do subsolo através de perfurações."], c: "Que são o recurso mais valioso para o poder econômico e militar atual." },
-        { q: "A 'Coincidência Cibernética' aplicada à geopolítica sugere que:", a: ["Eventos ocorridos no espaço digital e físico estão totalmente desconectados entre si.", "Padrões digitais triviais coincidem com decisões de alto escalão político.", "É impossível que dois computadores diferentes se conectem à rede ao mesmo tempo.", "O desenvolvimento tecnológico humano é fruto exclusivo do acaso e da sorte."], c: "Padrões digitais triviais coincidem com decisões de alto escalão político." },
-        { q: "O bloqueio de certas plataformas de vídeo por governos geralmente é justificado por:", a: ["Uma suposta falta de conteúdo educativo ou cultural relevante para a população.", "Preocupação com a soberania de dados e espionagem estrangeira.", "O argumento de que o aplicativo ocupa espaço excessivo na memória dos celulares.", "A reclamação de que os vídeos curtidos são muito curtos e superficiais."], c: "Preocupação com a soberania de dados e espionagem estrangeira." },
-        { q: "O que é 'Guerra Cibernética'?", a: ["A prática competitiva de jogos eletrônicos com temática de guerra online.", "Ações coordenadas no espaço digital para interromper serviços essenciais do inimigo.", "A venda e exportação de hardware e computadores para exércitos estrangeiros.", "O uso de redes sociais para estabelecer laços de amizade com cidadãos de outros países."], c: "Ações coordenadas no espaço digital para interromper serviços essenciais do inimigo." },
-        { q: "A criptografia ponta-a-ponta é importante para a cidadania digital porque:", a: ["Aumenta significativamente a velocidade de navegação e download na internet.", "Garante que apenas o emissor e o receptor leiam a mensagem, protegendo a privacidade.", "Permite o download e compartilhamento de arquivos de mídia de grande porte.", "Impede que o sistema operacional do celular consuma bateria de forma excessiva."], c: "Garante que apenas o emissor e o receptor leiam a mensagem, protegendo a privacidade." },
-        { q: "Como a análise de 'Big Data' ajuda governos em tempos de tensão?", a: ["Auxilia na escolha das combinações de cores mais adequadas para bandeiras nacionais.", "Permite processar grandes volumes de informações públicas para detectar anomalias ou ameaças.", "Serve exclusivamente para apagar registros históricos e dados antigos dos servidores.", "Não possui aplicação prática ou utilidade estratégica em cenários de conflito armado."], c: "Permite processar grandes volumes de informações públicas para detectar anomalias ou ameaças." },
-        { q: "O que caracteriza a 'Desinformação' como tática de guerra?", a: ["O compromisso em divulgar a verdade factual de forma transparente o tempo todo.", "Espalhar boatos deliberados para confundir a população e o exército adversário.", "O envio de mensagens de texto oficiais sem erros gramaticais ou de digitação.", "A tradução precisa e fiel de documentos diplomáticos e tratados internacionais."], c: "Espalhar boatos deliberados para confundir a população e o exército adversário." },
-        { q: "O termo 'Soberania Digital' refere-se a:", a: ["A capacidade de um país ter o controle sobre seus próprios dados, infraestrutura e tecnologia.", "O uso ativo de redes sociais e plataformas digitais pelo chefe de estado de uma nação.", "A estratégia de adquirir tecnologia e software de apenas um fornecedor global.", "A decisão política de desconectar totalmente o país da rede mundial de computadores."], c: "A capacidade de um país ter o controle sobre seus próprios dados, infraestrutura e tecnologia." },
-        { q: "Os 'Metadados' de um arquivo digital podem revelar:", a: ["Apenas o conteúdo textual ou visual principal explicitamente visível no arquivo.", "Data, hora, autor e, às vezes, a localização da criação do arquivo.", "A cor física do hardware do computador ou smartphone utilizado para criar o arquivo.", "O valor exato em dinheiro que o usuário pagou pela licença do software."], c: "Data, hora, autor e, às vezes, a localização da criação do arquivo." },
-        { q: "Por que a infraestrutura de cabos submarinos é estratégica?", a: ["Porque servem primariamente para a pesca industrial de espécies raras em profundidade.", "Porque por eles passa a quase totalidade do tráfego de internet mundial.", "Porque são utilizados exclusivamente para o transporte transoceânico de petróleo cru.", "Porque não possuem importância relevante para as comunicações globais modernas."], c: "Porque por eles passa a quase totalidade do tráfego de internet mundial." },
-        { q: "O que é um ataque de 'Phishing'?", a: ["Uma modalidade de esporte de pescaria simulado em ambiente virtual ou digital.", "Tentativa de enganar usuários para obter dados sensíveis através de mensagens falsas.", "Um componente físico de hardware de segurança utilizado em satélites de comunicação.", "Uma atualização obrigatória de segurança desenvolvida para o sistema operacional Windows."], c: "Tentativa de enganar usuários para obter dados sensíveis através de mensagens falsas." },
-        { q: "Na cidadania digital, o 'Direito ao Esquecimento' significa:", a: ["A habilidade biológica ou técnica de apagar memórias indesejadas do cérebro humano.", "O direito de solicitar a remoção de dados pessoais de buscadores sob certas condições.", "A ação voluntária de esquecer a senha de acesso ao e-mail principal.", "A prerrogativa de não precisar estudar ou memorizar conteúdos para avaliações escolares."], c: "O direito de solicitar a remoção de dados pessoais de buscadores sob certas condições." },
-        { q: "Qual o impacto dos algoritmos de recomendação na opinião pública?", a: ["Eles não exercem influência significativa sobre as decisões ou opiniões das pessoas.", "Podem criar 'bolhas' que reforçam apenas uma visão de mundo, facilitando a polarização.", "Eles têm o poder de tornar todas as pessoas instantaneamente mais inteligentes.", "Eles servem exclusivamente para direcionar publicidade de vestuário e acessórios."], c: "Podem criar 'bolhas' que reforçam apenas uma visão de mundo, facilitando a polarização." },
-        { q: "O uso de reconhecimento facial por governos gera debates sobre:", a: ["A estética e a qualidade das fotos das pessoas nos bancos de dados oficiais.", "O equilíbrio entre segurança pública e o direito à privacidade individual.", "A resolução técnica e a qualidade das lentes das câmeras de vigilância urbana.", "A aplicação de filtros de beleza e maquiagem digital em transmissões oficiais."], c: "O equilíbrio entre segurança pública e o direito à privacidade individual." },
-        { q: "O que são 'Bots' no contexto de redes sociais e geopolítica?", a: ["Robôs físicos autônomos que realizam entregas de encomendas em centros urbanos.", "Contas automatizadas usadas para inflar métricas ou espalhar mensagens em massa.", "Jogadores profissionais que competem em torneios internacionais de videogame.", "Vírus de computador projetados para danificar fisicamente a tela do smartphone."], c: "Contas automatizadas usadas para inflar métricas ou espalhar mensagens em massa." },
-        { q: "A 'Internet das Coisas' (IoT) aumenta o risco de ataques porque:", a: ["Os dispositivos conectados são extremamente caros e visados por criminosos.", "Conecta muitos dispositivos simples que muitas vezes não possuem segurança robusta.", "Os aparelhos consomem uma quantidade excessiva de banda de internet doméstica.", "A tecnologia não permite, sob nenhuma circunstância, o uso de senhas de acesso."], c: "Conecta muitos dispositivos simples que muitas vezes não possuem segurança robusta." },
-        { q: "O que é 'Guerra de Informação'?", a: ["A destruição física e sistemática de todos os arquivos de jornais e bibliotecas.", "O uso estratégico da informação para influenciar atitudes e comportamentos de um público.", "A prática de ler uma grande quantidade de livros sobre história política e militar.", "A garantia de acesso livre e irrestrito a todas as bibliotecas digitais do mundo."], c: "O uso estratégico da informação para influenciar atitudes e comportamentos de um público." },
-        { q: "Por que a tecnologia 5G é um ponto de disputa entre EUA e China?", a: ["Devido a divergências sobre a estética e o impacto visual das antenas na paisagem.", "Pelo controle da infraestrutura que conectará bilhões de dispositivos no futuro.", "Porque os testes indicaram que uma tecnologia é drasticamente mais lenta que a outra.", "Porque o 5G foi projetado para substituir completamente o uso de satélites de comunicação."], c: "Pelo controle da infraestrutura que conectará bilhões de dispositivos no futuro." },
-        { q: "O que é 'Ciberativismo'?", a: ["A prática de esportes de alto rendimento utilizando sensores e dispositivos digitais.", "O uso da internet e redes sociais para promover causas políticas ou sociais.", "O ato de trabalhar profissionalmente em grandes empresas do setor de tecnologia.", "A decisão de realizar compras de produtos exclusivamente através de plataformas de e-commerce."], c: "O uso da internet e redes sociais para promover causas políticas ou sociais." },
-        { q: "A 'Identidade Digital' de um cidadão é composta por:", a: ["Exclusivamente pelo número do seu CPF e outros documentos de identificação civil.", "O conjunto de dados e registros que o identificam no ambiente online.", "A foto de perfil mais recente utilizada em redes sociais como o Instagram.", "O modelo e a marca do smartphone que o cidadão utiliza diariamente."], c: "O conjunto de dados e registros que o identificam no ambiente online." },
-        { q: "Qual a importância da 'Alfabetização Digital'?", a: ["A habilidade de digitar textos rapidamente utilizando todos os dedos no teclado.", "Capacidade de localizar, analisar e usar informação de forma crítica no mundo digital.", "O conhecimento técnico sobre os nomes e funções de todas as peças internas de um computador.", "A conquista de um grande número de seguidores e curtidas nas redes sociais."], c: "Capacidade de localizar, analisar e usar informação de forma crítica no mundo digital." },
-        { q: "O termo 'Vulnerabilidade Zero-Day' refere-se a:", a: ["Um sistema de segurança perfeito que nunca apresentou erros ou falhas desde o lançamento.", "Uma falha de segurança desconhecida pelo fabricante e que não tem correção imediata.", "Um computador ou servidor que está em operação há exatamente zero dias.", "Uma senha de acesso temporária que expira automaticamente em 24 horas."], c: "Uma falha de segurança desconhecida pelo fabricante e que não tem correção imediata." },
-        { q: "Qual o papel da ética na tecnologia e cidadania digital?", a: ["Não possui papel relevante, uma vez que a tecnologia é considerada uma ferramenta neutra.", "Orientar o desenvolvimento e uso de ferramentas para que respeitem os direitos humanos e a coletividade.", "Serve primariamente para tornar as interfaces dos programas de computador mais bonitas e atraentes.", "É um conjunto de regras puramente comerciais projetadas para gerar lucro mais rapidamente."], c: "Orientar o desenvolvimento e uso de ferramentas para que respeitem os direitos humanos e a coletividade." }
+        { 
+            q: "Um cidadão digital consciente deve agir da seguinte forma em relação aos seus dados:", 
+            a: [
+                "Utilizar a mesma credencial de acesso em múltiplas plataformas para facilitar a gestão de senhas.", 
+                "Aceitar de forma automática todos os termos de serviço para garantir o funcionamento do algoritmo.", 
+                "Avaliar criticamente quais permissões de localização e acesso aos sensores concede aos aplicativos.", 
+                "Compartilhar conteúdos de alto impacto emocional imediatamente para alertar sua rede de contatos."
+            ], 
+            c: "Avaliar criticamente quais permissões de localização e acesso aos sensores concede aos aplicativos." 
+        },
+        { 
+            q: "O fenômeno 'Pizza Meter' demonstra uma vulnerabilidade na segurança institucional porque:", 
+            a: [
+                "A qualidade nutricional das refeições afeta diretamente o rendimento técnico dos servidores públicos.", 
+                "Dados comerciais de consumo em massa podem revelar períodos de crise e mobilização de pessoal.", 
+                "As empresas de entrega possuem contratos de exclusividade que impedem o sigilo de dados fiscais.", 
+                "O custo logístico das entregas noturnas serve como base para o cálculo da inflação em áreas civis."
+            ], 
+            c: "Dados comerciais de consumo em massa podem revelar períodos de crise e mobilização de pessoal." 
+        },
+        { 
+            q: "A prática de Inteligência de Fontes Abertas (OSINT) consiste essencialmente em:", 
+            a: [
+                "Executar invasões em servidores criptografados utilizando falhas desconhecidas pelos fabricantes.", 
+                "Monitorar comunicações privadas através da instalação de softwares espiões em dispositivos móveis.", 
+                "Coletar e analisar sistematicamente dados que estão disponíveis publicamente para livre consulta.", 
+                "Recrutar agentes de campo para obter documentos confidenciais dentro de instalações governamentais."
+            ], 
+            c: "Coletar e analisar sistematicamente dados que estão disponíveis publicamente para livre consulta." 
+        },
+        { 
+            q: "O uso de GPS em aplicativos de saúde por militares em áreas de conflito representa um risco pois:", 
+            a: [
+                "O consumo excessivo de bateria pode inviabilizar o uso do rádio de comunicação em momentos críticos.", 
+                "O sinal de satélite pode interferir na frequência utilizada pelos sistemas de defesa aérea local.", 
+                "O mapeamento das rotas percorridas pode expor o perímetro e a rotina de bases militares sigilosas.", 
+                "A precisão do algoritmo de corrida diminui consideravelmente em zonas de interferência eletromagnética."
+            ], 
+            c: "O mapeamento das rotas percorridas pode expor o perímetro e a rotina de bases militares sigilosas." 
+        },
+        { 
+            q: "No contexto da Geopolítica Digital, o termo 'Soberania de Dados' refere-se ao direito de:", 
+            a: [
+                "Uma nação exercer o controle legal sobre as informações geradas e armazenadas em seu território.", 
+                "As Big Techs decidirem quais conteúdos devem ser censurados sem interferência do poder judiciário.", 
+                "Os usuários comuns deletarem permanentemente seus rastros digitais de qualquer servidor estrangeiro.", 
+                "Um país proibir o uso de satélites internacionais para o monitoramento de suas áreas de preservação."
+            ], 
+            c: "Uma nação exercer o controle legal sobre as informações geradas e armazenadas em seu território." 
+        },
+        { 
+            q: "Deepfakes representam uma ameaça tecnológica significativa à democracia porque permitem:", 
+            a: [
+                "Aumentar a velocidade de processamento de vídeos em alta definição para transmissões ao vivo.", 
+                "Criar conteúdos audiovisuais sintéticos altamente realistas para manipular a opinião pública.", 
+                "Desenvolver filtros de realidade aumentada que facilitam o reconhecimento facial em multidões.", 
+                "Automatizar a legenda de vídeos em múltiplos idiomas para ampliar o alcance das redes sociais."
+            ], 
+            c: "Criar conteúdos audiovisuais sintéticos altamente realistas para manipular a opinião pública." 
+        },
+        { 
+            q: "A infraestrutura de cabos submarinos é considerada um ponto estratégico global pois:", 
+            a: [
+                "São responsáveis por alimentar as redes de energia das ilhas que não possuem usinas próprias.", 
+                "Por eles trafega a quase totalidade das comunicações e dados da internet em nível mundial.", 
+                "Servem como suporte físico para a instalação de sensores térmicos que monitoram o clima global.", 
+                "Permitem o transporte de dados via rádio frequência entre os continentes de forma analógica."
+            ], 
+            c: "Por eles trafega a quase totalidade das comunicações e dados da internet em nível mundial." 
+        },
+        { 
+            q: "Dizer que os dados são o 'novo petróleo' significa que, na economia moderna, eles são:", 
+            a: [
+                "Recursos finitos que precisam ser extraídos do subsolo para garantir o funcionamento das redes.", 
+                "O ativo mais valioso para o desenvolvimento de poder econômico, militar e tecnológico atual.", 
+                "Elementos altamente poluentes que causam danos irreversíveis ao hardware de grandes servidores.", 
+                "Substâncias químicas utilizadas na fabricação de processadores e componentes de inteligência."
+            ], 
+            c: "O ativo mais valioso para o desenvolvimento de poder econômico, militar e tecnológico atual." 
+        },
+        { 
+            q: "Uma vulnerabilidade 'Zero-Day' em um sistema de segurança digital é caracterizada por:", 
+            a: [
+                "Ser um erro de programação simples que pode ser corrigido pelo usuário em menos de um dia.", 
+                "Uma falha crítica desconhecida pelo fabricante para a qual ainda não existe correção oficial.", 
+                "O tempo exato de validade de uma senha temporária antes que o sistema solicite uma nova troca.", 
+                "Um protocolo de defesa que impede o acesso de novos usuários em servidores recém-instalados."
+            ], 
+            c: "Uma falha crítica desconhecida pelo fabricante para a qual ainda não existe correção oficial." 
+        },
+        { 
+            q: "O monitoramento de tanques de petróleo via satélite por empresas privadas serve para:", 
+            a: [
+                "Garantir que a temperatura interna do combustível não cause explosões em refinarias civis.", 
+                "Prever movimentações econômicas e estratégicas com base no estoque real dos adversários.", 
+                "Identificar falhas na pintura dos tanques para evitar o desgaste causado pela corrosão marítima.", 
+                "Transmitir sinal de rádio para os navios petroleiros que operam fora da cobertura de satélites."
+            ], 
+            c: "Prever movimentações econômicas e estratégicas com base no estoque real dos adversários." 
+        },
+        { 
+            q: "O 'Direito ao Esquecimento' no ambiente digital é um conceito que discute:", 
+            a: [
+                "A permissão para que os usuários deletem sua conta de e-mail sem precisar salvar os arquivos antigos.", 
+                "A possibilidade de solicitar a desindexação de dados pessoais de buscadores em certas condições.", 
+                "O uso de algoritmos que limpam automaticamente o cache do navegador para liberar espaço em disco.", 
+                "A obrigatoriedade de as redes sociais apagarem fotos de usuários que não fazem login há um ano."
+            ], 
+            c: "A possibilidade de solicitar a desindexação de dados pessoais de buscadores em certas condições." 
+        },
+        { 
+            q: "Algoritmos de recomendação podem influenciar a geopolítica ao criar 'bolhas' que:", 
+            a: [
+                "Aumentam a diversidade de opiniões ao sugerir conteúdos de fontes com pensamentos opostos.", 
+                "Reforçam apenas as crenças pré-existentes do usuário, facilitando a polarização da sociedade.", 
+                "Bloqueiam automaticamente todas as notícias falsas antes que elas cheguem ao feed do usuário.", 
+                "Garantem que todos os cidadãos recebam exatamente as mesmas informações oficiais do governo."
+            ], 
+            c: "Reforçam apenas as crenças pré-existentes do usuário, facilitando a polarização da sociedade." 
+        },
+        { 
+            q: "A tecnologia 5G é um ponto de disputa entre grandes potências mundiais porque:", 
+            a: [
+                "O sinal de alta frequência é o único capaz de atravessar paredes de bunkers militares de concreto.", 
+                "Quem controla a infraestrutura controla o fluxo de dados de bilhões de dispositivos conectados.", 
+                "As antenas chinesas e americanas operam em volts diferentes, o que impede a conexão mundial.", 
+                "A instalação desse sistema exige o uso de minerais raros que só existem em territórios neutros."
+            ], 
+            c: "Quem controla a infraestrutura controla o fluxo de dados de bilhões de dispositivos conectados." 
+        },
+        { 
+            q: "A Engenharia Social é uma tática perigosa em ataques cibernéticos pois foca em:", 
+            a: [
+                "Manipular psicologicamente as pessoas para que revelem informações ou senhas confidenciais.", 
+                "Desenvolver cálculos matemáticos complexos para quebrar a criptografia de pastas protegidas.", 
+                "Construir infraestruturas de rede mais eficientes para suportar o tráfego de dados em massa.", 
+                "Organizar movimentos sociais através de aplicativos de mensagens para derrubar governos locais."
+            ], 
+            c: "Manipular psicologicamente as pessoas para que revelem informações ou senhas confidenciais." 
+        },
+        { 
+            q: "Os metadados de uma fotografia digital tirada por um smartphone podem revelar:", 
+            a: [
+                "Apenas o brilho e o contraste configurados no momento em que a imagem foi capturada.", 
+                "Informações precisas sobre o autor, o modelo do aparelho e a localização geográfica da foto.", 
+                "O valor de mercado que o usuário pagou pelo dispositivo e a operadora de celular utilizada.", 
+                "O nome de todas as pessoas que aparecem na imagem através do reconhecimento facial nativo."
+            ], 
+            c: "Informações precisas sobre o autor, o modelo do aparelho e a localização geográfica da foto." 
+        }
     ];
 
     function embaralhar(array) {
@@ -155,10 +258,7 @@
             const ranking = await response.json();
             const corpo = document.getElementById('corpoRankingInicio');
             corpo.innerHTML = "";
-            
-            // Ordena o ranking por acertos (desc) e depois tempo (asc)
             ranking.sort((a, b) => b.acertos - a.acertos || a.tempo - b.tempo);
-
             ranking.forEach((item, index) => {
                 const medalha = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
                 corpo.innerHTML += `<tr><td>${medalha}${index + 1}º</td><td style="text-align:left">${item.grupo}</td><td><strong>${item.acertos}/15</strong></td><td>${formatarTempo(item.tempo)}</td></tr>`;
@@ -173,12 +273,11 @@
     function iniciarQuiz() {
         const grupo = document.getElementById('nomeGrupo').value.trim();
         const lista = document.getElementById('integrantes').value.trim();
-        if(!grupo || !lista) return alert("Por favor, identifique o grupo e os integrantes!");
+        if(!grupo || !lista) return alert("Por favor, identifique o grupo!");
 
         document.getElementById('setup').classList.add('hidden');
         document.getElementById('quizContainer').classList.remove('hidden');
         
-        // Sorteia 15 questões e para cada uma embaralha as alternativas
         selecionadas = embaralhar([...bancoQuestoes]).slice(0, 15).map(q => {
             return { ...q, a: embaralhar([...q.a]) };
         });
@@ -200,7 +299,7 @@
                 </div>`;
         });
 
-        window.scrollTo(0, 0); // Sobe a tela para o início do quiz
+        window.scrollTo(0, 0);
         tempoInicio = Date.now();
         intervalo = setInterval(() => {
             const segundos = Math.floor((Date.now() - tempoInicio) / 1000);
@@ -209,20 +308,17 @@
     }
 
     async function finalizarQuiz() {
-        // Validação: Verifique se todas as questões foram respondidas
         for (let i = 0; i < selecionadas.length; i++) {
             if (!document.querySelector(`input[name="q${i}"]:checked`)) {
                 alert(`Por favor, responda à questão ${i + 1} antes de enviar.`);
-                return; // Para a execução se faltar resposta
+                return;
             }
         }
-
         if(!confirm("Tem certeza que deseja enviar suas respostas?")) return;
 
         clearInterval(intervalo);
         const tempoSegundos = Math.floor((Date.now() - tempoInicio) / 1000);
         let acertos = 0;
-
         selecionadas.forEach((p, i) => {
             const res = document.querySelector(`input[name="q${i}"]:checked`);
             if(res && res.value === p.c) acertos++;
@@ -235,31 +331,18 @@
             tempo: tempoSegundos
         };
 
-        // Mostra feedback visual de envio
-        document.getElementById('questoesArea').innerHTML = `
-            <div style="text-align:center; padding: 50px;">
-                <h2 style="color: var(--primary);">🚀 Enviando seus resultados...</h2>
-                <p>Aguarde um momento.</p>
-            </div>
-        `;
-        document.querySelector('#quizContainer button').style.display = 'none'; // Esconde botão de enviar
-        
+        document.getElementById('quizContainer').innerHTML = "<h2>Enviando resultados para a planilha do Prof. Fernando...</h2>";
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
-            
-            // Pequeno delay para garantir que a requisição no-cors foi processada
             setTimeout(() => {
                 document.getElementById('quizContainer').classList.add('hidden');
                 document.getElementById('posEnvio').classList.remove('hidden');
                 window.scrollTo(0, 0);
             }, 1000);
-
         } catch (e) {
-            alert("Ocorreu um erro ao enviar. Verifique a conexão e tente novamente.");
-            // Opcional: reiniciar o timer ou permitir reenvio
+            alert("Erro ao enviar. Tente novamente.");
         }
     }
 </script>
-
 </body>
 </html>
